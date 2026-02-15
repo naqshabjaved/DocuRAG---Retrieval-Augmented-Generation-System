@@ -6,3 +6,6 @@ pypdf
 sentence-transformers
 numpy
 faiss-cpu
+torch
+transformers
+accelerate
