@@ -35,7 +35,7 @@ class FAISSRetriever:
 
         self.chunks.extend(chunks)
 
-    def search(self, query_embedding: np.ndarray, top_k: int = 3) -> List[DocumentChunk]:
+    def search(self, query_embedding: np.ndarray, top_k: int = 2) -> List[DocumentChunk]:
         """
         Search for top_k similar chunks.
         """

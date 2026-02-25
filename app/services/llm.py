@@ -24,27 +24,28 @@ class LLMService:
 
         print("LLM loaded successfully.")
 
-    def generate(self, prompt: str, max_new_tokens: int = 200) -> str:
-        """
-        Generate response from the LLM given a prompt.
-        Returns only the generated answer (without prompt echo).
-        """
-        inputs = self.tokenizer(prompt, return_tensors="pt")
+    def generate(self, prompt: str, max_new_tokens: int = 250) -> str:
+        messages = [
+            {"role": "system", "content": "Answer strictly using the provided context."},
+            {"role": "user", "content": prompt}
+        ]
+
+        input_ids = self.tokenizer.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            return_tensors="pt"
+        )
 
         with torch.no_grad():
             outputs = self.model.generate(
-                **inputs,
+                input_ids,
                 max_new_tokens=max_new_tokens,
                 temperature=0.2,
-                do_sample=True
+                do_sample=False
             )
 
-        full_response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        generated_tokens = outputs[0][input_ids.shape[-1]:]
+        response = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
 
-        # Extract only the generated answer
-        if "Answer:" in full_response:
-            answer = full_response.split("Answer:")[-1].strip()
-        else:
-            answer = full_response.strip()
+        return response.strip()
 
-        return answer

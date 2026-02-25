@@ -18,7 +18,7 @@ class DocumentIngestionService:
     Handles document loading, cleaning, and chunking.
     """
 
-    def __init__(self, chunk_size: int = 800, chunk_overlap: int = 100):
+    def __init__(self, chunk_size: int = 400, chunk_overlap: int = 50):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
@@ -42,18 +42,29 @@ class DocumentIngestionService:
 
     def _load_pdf(self, path: Path) -> str:
         """
-        Extract text from PDF file.
+        Extract text from PDF file with spacing correction.
         """
+        import re
+
         reader = PdfReader(str(path))
         text = ""
 
         for page_number, page in enumerate(reader.pages):
             page_text = page.extract_text()
+
             if page_text:
+                # Basic cleanup
+                page_text = page_text.replace("\xa0", " ")
+                page_text = page_text.strip()
+
+                #Fix spaced-letter issue like "P R O J E C T S"
+                page_text = re.sub(r'(?<=\b\w)\s(?=\w\b)', '', page_text)
+
                 text += f"\n\n[Page {page_number + 1}]\n"
                 text += page_text
 
         return text
+
 
     def chunk_text(self, text: str, source_name: str) -> List[DocumentChunk]:
         """
